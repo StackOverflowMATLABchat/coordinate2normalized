@@ -48,19 +48,4 @@ if isempty(x) || isempty(y)
     err.stack = dbstack('-completenames');
     error(err)
 end
-endfunction [xnorm, ynorm] = coordinate2normalized(axishandle, x, y)
-checkinputs(axishandle, x, y);
-olderthanR2014b = verLessThan('MATLAB', '8.4'); % Global version flag to be used for calling correct syntax
-
-set(axishandle, 'Units', 'Normalized');
-axisposition = get(axishandle, 'Position'); % Get position in figure window
-axislimits = axis(axishandle);
-
-axisdatawidth  = axislimits(2) - axislimits(1);
-axisdataheight = axislimits(4) - axislimits(3);
-
-% Normalize x values
-xnorm = (x - axislimits(1))*(axisposition(3)/axisdatawidth) + axisposition(1);
-% Normalize y values
-ynorm = (y - axislimits(3))*(axisposition(4)/axisdataheight) + axisposition(2);
 end
