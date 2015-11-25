@@ -1,4 +1,33 @@
 function [xcoord, ycoord] = norm2coord(axishandle, x, y)
+%NORM2COORD Map container normalized coordinates to axes data space
+% NORM2COORD(axishandle, x, y) takes input XY coordinates normalized to the
+% parent container of the axes object, axishandle, and maps them to
+% cartesian coordinates in the data space of the axes object. This is 
+% useful when interacting with functions like annotation, where the input
+% XY coordinates are normalized to the parent container of the plotting
+% axes object and not to the data being plotted. axishandle must be a valid
+% MATLAB axes object (HG2) or handle (HG1).
+%
+% COORD2NORM returns discrete arrays xcoord and ycoord of the same size as
+% the input XY normalized coordinate arrays.
+%
+% Example:
+%
+%    myaxes = axes();
+%    x = -10:10;
+%    y = x.^2;
+%    plot(x, y);
+%
+%    normx = [0.5, 0.55];
+%    normy = [0.5, 0.55];
+%    annotation('arrow', normx, normy);
+%
+%    hold on;
+%    [coordx, coordy] = norm2coord(myaxes, normx, normy);
+%    plot(coordx, coordy, 'or')
+%
+% See also ANNOTATION, PLOT, AXES, FIGURE
+
 checkinputs(axishandle, x, y);
 
 % The Position property of MATLAB's axes object is its position relative to
@@ -55,7 +84,7 @@ else
 end
 if ~isaxes
     err.message = sprintf('First input to function must be a MATLAB Axes object, not %s', objtype);
-    err.identifier = 'coord2norm:InvalidObject';
+    err.identifier = 'norm2coord:InvalidObject';
     err.stack = dbstack('-completenames');
     error(err)
 end
