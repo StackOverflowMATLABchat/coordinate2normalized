@@ -16,6 +16,8 @@ plot(x, y);
 annotation('arrow', normx, normy);
 ````
 
+![coord2norm](https://github.com/sco1/sco1.github.io/blob/master/coordinate2normalized/coord2norm.png)
+
 Also included is the helper function `NORM2COORD` which performs the reverse operation, mapping coordinates normalized to the parent container of `axishandle` to the data space of `axishandle`.
 
 Example:
@@ -33,3 +35,6 @@ annotation('arrow', normx, normy);
 hold on;
 [coordx, coordy] = norm2coord(myaxes, normx, normy);
 plot(coordx, coordy, 'or')
+```
+
+![norm2coord](https://github.com/sco1/sco1.github.io/blob/master/coordinate2normalized/norm2coord.png)
