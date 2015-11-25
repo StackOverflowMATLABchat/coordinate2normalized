@@ -2,7 +2,7 @@ function [xnorm, ynorm] = coord2norm(axishandle, x, y)
 %COORD2NORM Normalize coordinates from data space to axes parent container
 % COORD2NORM(axishandle, x, y) takes input XY coordinates, relative to the
 % axes object axishandle, and normalizes them to the parent container of
-% axishandle. This is useful for functions like annotation, where the 
+% axishandle. This is useful for functions like annotation, where the input 
 % XY coordinates are normalized to the parent container of the plotting
 % axes object and not to the data being plotted. axishandle must be a valid
 % MATLAB axes object (HG2) or handle (HG1).
@@ -17,9 +17,10 @@ function [xnorm, ynorm] = coord2norm(axishandle, x, y)
 %    y = x.^2;
 %    plot(x, y);
 %
-%    [newx, newy] = coord2norm(myaxes, [x(1) x(2)], [y(1) y(2)]);
+%    [normx, normy] = coord2norm(myaxes, [x(1) x(2)], [y(1) y(2)]);
+%    annotation('arrow', normx, normy);
 %
-% See also ANNOTATION, AXES, FIGURE
+% See also ANNOTATION, PLOT, AXES, FIGURE
 
 checkinputs(axishandle, x, y);
 
