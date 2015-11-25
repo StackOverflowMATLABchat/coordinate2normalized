@@ -38,7 +38,7 @@ olderthanR2014b = verLessThan('MATLAB', '8.4');  % Version flag to be used for c
 % Make sure the object passed is an axes object
 % Return true if it's a valid axes, false otherwise
 if ~olderthanR2014b
-    isaxes = ~isa(axishandle, 'matlab.graphics.axis.Axes');
+    isaxes = isa(axishandle, 'matlab.graphics.axis.Axes');
     objtype = class(axishandle);
 else
     try
