@@ -24,34 +24,27 @@ function [xnorm, ynorm] = coord2norm(axishandle, x, y)
 
 checkinputs(axishandle, x, y);
 
-% The Position property of MATLAB's axes object is its position relative to
-% the parent object. MATLAB's annotation objects can only be positioned 
-% relative to a figure, uipanel, or uitab object so we have to use the size
-% and position of the axes object to transform the axes XY coordinates to
-% an absolute position relative to the parent container.
-
-% Get axes position
+% Check to see if one or both axes is logarithmic to set flag appropriately
 olderthanR2014b = verLessThan('MATLAB', '8.4');  % Version flag to be used for calling correct syntax
-if ~olderthanR2014b  % Choose correct syntax for accessing handle graphics
-    oldunits = axishandle.Units;         % Get old units to revert to later
-    axishandle.Units = 'Normalized';     % Set normalized units if not already
-    axisposition = axishandle.Position;  % Get position in figure window
-    axishandle.Units = oldunits;         % Revert unit change
+if ~olderthanR2014b % Choose correct syntax for accessing handle graphics
+    xaxisscale = axishandle.XScale;
+    yaxisscale = axishandle.YScale;
 else
-    oldunits = get(axishandle, 'Units');
-    set(axishandle, 'Units', 'Normalized');
-    axisposition = get(axishandle, 'Position');
-    set(axishandle, 'Units', oldunits);
+    xaxisscale = get(axishandle, 'XScale');
+    yaxisscale = get(axishandle, 'YScale');
 end
 
-axislimits = axis(axishandle);
-axisdatawidth  = axislimits(2) - axislimits(1);
-axisdataheight = axislimits(4) - axislimits(3);
+if strcmp(xaxisscale, 'linear') && strcmp(yaxisscale, 'linear')
+    flag = 'linear';
+elseif strcmp(xaxisscale, 'log') && strcmp(yaxisscale, 'log')
+    flag = 'loglog';
+elseif strcmp(xaxisscale, 'log') && strcmp(yaxisscale, 'linear')
+    flag = 'semilogx';
+elseif strcmp(xaxisscale, 'linear') && strcmp(yaxisscale, 'log')
+    flag = 'semilogy';
+end
 
-% Normalize X values
-xnorm = (x - axislimits(1))*(axisposition(3)/axisdatawidth) + axisposition(1);
-% Normalize Y values
-ynorm = (y - axislimits(3))*(axisposition(4)/axisdataheight) + axisposition(2);
+[xnorm, ynorm] = normcoord(axishandle, x, y, flag);
 
 end
 
@@ -105,4 +98,55 @@ if isempty(x) || isempty(y)
     err.stack = dbstack('-completenames');
     error(err)
 end
+end
+
+function [xnorm, ynorm] = normcoord(axishandle, x, y, flag)
+% The Position property of MATLAB's axes object is its position relative to
+% the parent object. MATLAB's annotation objects can only be positioned 
+% relative to a figure, uipanel, or uitab object so we have to use the size
+% and position of the axes object to transform the axes XY coordinates to
+% an absolute position relative to the parent container.
+%
+% Uses flag to determine if one or both of the axes is logarithmic
+
+% Get axes position
+olderthanR2014b = verLessThan('MATLAB', '8.4');  % Version flag to be used for calling correct syntax
+if ~olderthanR2014b  % Choose correct syntax for accessing handle graphics
+    oldunits = axishandle.Units;         % Get old units to revert to later
+    axishandle.Units = 'Normalized';     % Set normalized units if not already
+    axisposition = axishandle.Position;  % Get position in figure window
+    axishandle.Units = oldunits;         % Revert unit change
+else
+    oldunits = get(axishandle, 'Units');
+    set(axishandle, 'Units', 'Normalized');
+    axisposition = get(axishandle, 'Position');
+    set(axishandle, 'Units', oldunits);
+end
+
+axislimits = axis(axishandle);
+
+% If an axis uses the log scale, replace that axis' limits with
+% log10(limits) for the following axiswidth/axisheight calculations to make
+% sense in the context of the MATLAB figure. Same goes for the x/y
+% coordinates, where necessary.
+switch flag
+    case 'linear'
+        % No modification necessary
+    case 'loglog'
+        axislimits = log10(axislimits);
+        x = log10(x);
+        y = log10(y);
+    case 'semilogx'
+        axislimits(1:2) = log10(axislimits(1:2));
+        x = log10(x);
+    case 'semilogy'
+        axislimits(3:4) = log10(axislimits(3:4));
+        y = log10(y);
+end
+
+axisdatawidth  = axislimits(2) - axislimits(1);
+axisdataheight = axislimits(4) - axislimits(3);
+
+xnorm = (x - axislimits(1))*(axisposition(3)/axisdatawidth) + axisposition(1);
+ynorm = (y - axislimits(3))*(axisposition(4)/axisdataheight) + axisposition(2);
 end
