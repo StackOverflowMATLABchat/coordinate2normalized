@@ -34,10 +34,28 @@ end
 
 function checkinputs(axishandle, x, y)
 olderthanR2014b = verLessThan('MATLAB', '8.4');  % Version flag to be used for calling correct syntax
+
 % Make sure the object passed is an axes object
-if ~isa(axishandle, 'matlab.graphics.axis.Axes')
-    err.message = sprintf('First input to function must be a MATLAB Axes object, not %s', class(axishandle));
-    err.identifier = 'norm2coord:InvalidObject';
+% Return true if it's a valid axes, false otherwise
+if ~olderthanR2014b
+    isaxes = ~isa(axishandle, 'matlab.graphics.axis.Axes');
+    objtype = class(axishandle);
+else
+    try
+        objtype = get(axishandle, 'Type');
+        if strcmp(objtype, 'axes')
+            isaxes = true;
+        else
+            isaxes = false;
+        end
+    catch
+        objtype = 'N/A';
+        isaxes = false;
+    end
+end
+if ~isaxes
+    err.message = sprintf('First input to function must be a MATLAB Axes object, not %s', objtype);
+    err.identifier = 'coord2norm:InvalidObject';
     err.stack = dbstack('-completenames');
     error(err)
 end
