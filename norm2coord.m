@@ -30,35 +30,27 @@ function [xcoord, ycoord] = norm2coord(axishandle, x, y)
 
 checkinputs(axishandle, x, y);
 
-% The Position property of MATLAB's axes object is its position relative to
-% the parent object. MATLAB's annotation objects can only be positioned 
-% relative to a figure, uipanel, or uitab object so we have to use the size
-% and position of the axes object to transform our absolute position in 
-% the figure to XY coordinates of the axes object.
-
-% Get axes position
+% Check to see if one or both axes is logarithmic to set flag appropriately
 olderthanR2014b = verLessThan('MATLAB', '8.4');  % Version flag to be used for calling correct syntax
-if ~olderthanR2014b  % Choose correct syntax for accessing handle graphics
-    oldunits = axishandle.Units;         % Get old units to revert to later
-    axishandle.Units = 'Normalized';     % Set normalized units if not already
-    axisposition = axishandle.Position;  % Get position in figure window
-    axishandle.Units = oldunits;         % Revert unit change
+if ~olderthanR2014b % Choose correct syntax for accessing handle graphics
+    xaxisscale = axishandle.XScale;
+    yaxisscale = axishandle.YScale;
 else
-    oldunits = get(axishandle, 'Units');
-    set(axishandle, 'Units', 'Normalized');
-    axisposition = get(axishandle, 'Position');
-    set(axishandle, 'Units', oldunits);
+    xaxisscale = get(axishandle, 'XScale');
+    yaxisscale = get(axishandle, 'YScale');
 end
 
-axislimits = axis(axishandle);
-axisdatawidth  = axislimits(2) - axislimits(1);
-axisdataheight = axislimits(4) - axislimits(3);
+if strcmp(xaxisscale, 'linear') && strcmp(yaxisscale, 'linear')
+    flag = 'linear';
+elseif strcmp(xaxisscale, 'log') && strcmp(yaxisscale, 'log')
+    flag = 'loglog';
+elseif strcmp(xaxisscale, 'log') && strcmp(yaxisscale, 'linear')
+    flag = 'semilogx';
+elseif strcmp(xaxisscale, 'linear') && strcmp(yaxisscale, 'log')
+    flag = 'semilogy';
+end
 
-% Normalize x values
-xcoord = (x - axisposition(1))*(axisdatawidth/axisposition(3)) + axislimits(1);
-% Normalize y values
-ycoord = (y - axisposition(2))*(axisdataheight/axisposition(4)) + axislimits(3);
-
+[xcoord, ycoord] = coordmap(axishandle, x, y, flag);
 end
 
 function checkinputs(axishandle, x, y)
@@ -125,3 +117,68 @@ if max(x) > 1 || min(x) < 0 || max(y) > 1 || min(y) < 0
 end
 
 end
+
+function [xcoord, ycoord] = coordmap(axishandle, x, y, flag)
+% The Position property of MATLAB's axes object is its position relative to
+% the parent object. MATLAB's annotation objects are positioned relative to
+% a figure, uipanel, or uitab object so we have to use the size and
+% position of the axes object to map the normalized coordinates back to the
+% axes. Note that errors introduced during the conversion process may be
+% significant, particularly in the case of logarithmic scales, so
+% attempting to test for equivalence may yield unexpected results.
+%
+% Uses flag to determine if one or both of the axes is logarithmic
+
+% Get axes position
+olderthanR2014b = verLessThan('MATLAB', '8.4');  % Version flag to be used for calling correct syntax
+if ~olderthanR2014b  % Choose correct syntax for accessing handle graphics
+    oldunits = axishandle.Units;         % Get old units to revert to later
+    axishandle.Units = 'Normalized';     % Set normalized units if not already
+    axisposition = axishandle.Position;  % Get position in figure window
+    axishandle.Units = oldunits;         % Revert unit change
+else
+    oldunits = get(axishandle, 'Units');
+    set(axishandle, 'Units', 'Normalized');
+    axisposition = get(axishandle, 'Position');
+    set(axishandle, 'Units', oldunits);
+end
+
+axislimits = axis(axishandle);
+
+% If an axis uses the log scale, replace that axis' limits with
+% log10(limits) for the following axiswidth/axisheight calculations to make
+% sense in the context of the MATLAB figure.
+switch flag
+    case 'linear'
+        % No modification necessary
+    case 'loglog'
+        axislimits = log10(axislimits);
+    case 'semilogx'
+        axislimits(1:2) = log10(axislimits(1:2));
+    case 'semilogy'
+        axislimits(3:4) = log10(axislimits(3:4));
+end
+
+axisdatawidth  = axislimits(2) - axislimits(1);
+axisdataheight = axislimits(4) - axislimits(3);
+
+% Normalize x values
+xcoord = (x - axisposition(1))*(axisdatawidth/axisposition(3)) + axislimits(1);
+% Normalize y values
+ycoord = (y - axisposition(2))*(axisdataheight/axisposition(4)) + axislimits(3);
+
+% One final transformation required for log plots.
+switch flag
+    case 'linear'
+        % No modification necessary
+    case 'loglog'
+        xcoord = 10.^xcoord;
+        ycoord = 10.^ycoord;
+    case 'semilogx'
+        xcoord = 10.^xcoord;
+    case 'semilogy'
+        ycoord = 10.^ycoord;
+end
+
+end
+
