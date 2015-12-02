@@ -1,3 +1,5 @@
+[![MATLAB FEX](https://img.shields.io/badge/MATLAB-File%20Exchange-brightgreen.svg)](http://www.mathworks.com/matlabcentral/fileexchange/54254-coord2norm)
+
 # coordinate2normalized
 
 `COORD2NORM(axishandle, x, y)` takes input XY coordinates, relative to the axes object `axishandle`, and normalizes them to the parent container of `axishandle`. This is useful for functions like `annotation`, where the input XY coordinates are normalized to the parent container of the plotting axes object and not to the data being plotted. `axishandle` must be a valid MATLAB axes object (HG2) or handle (HG1).
