@@ -1,4 +1,4 @@
-[![MATLAB FEX](https://img.shields.io/badge/MATLAB-File%20Exchange-brightgreen.svg)](http://www.mathworks.com/matlabcentral/fileexchange/54254-coord2norm) ![Minimum Version](https://img.shields.io/badge/Requires-R2007a%20%28v7.4%29-orange.svg)
+[![MATLAB FEX](https://img.shields.io/badge/MATLAB%20FEX-coord2norm-brightgreen.svg)](http://www.mathworks.com/matlabcentral/fileexchange/54254-coord2norm) ![Minimum Version](https://img.shields.io/badge/Requires-R2007a%20%28v7.4%29-orange.svg)
 
 # coordinate2normalized
 
